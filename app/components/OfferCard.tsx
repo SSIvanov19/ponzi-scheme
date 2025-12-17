@@ -1,7 +1,7 @@
 'use client';
 
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { OfferCard, REFERRAL_LABELS } from '../lib/types';
+import { OfferCard } from '../lib/types';
 import { formatReturn } from '../lib/cards';
 import { 
   Search, 
@@ -12,6 +12,7 @@ import {
   BadgeCheck,
   ClipboardCheck
 } from 'lucide-react';
+import { ReferralDisplay } from './ReferralDisplay';
 
 interface OfferCardDisplayProps {
   card: OfferCard;
@@ -104,10 +105,7 @@ export function OfferCardDisplay({ card, revealedChecks = {}, showBasicInfo = fa
       </div>
 
       {/* Referral Context - always visible (how you heard about it) */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-sm text-slate-400">How you heard about it:</span>
-        <span className="text-sm text-blue-300">{REFERRAL_LABELS[card.referralContext]}</span>
-      </div>
+      <ReferralDisplay context={card.referralContext} pitch={card.pitch} title={card.title} />
 
       {/* Basic Info - only shown after investigation or in regulator mode */}
       {showBasicInfo && (

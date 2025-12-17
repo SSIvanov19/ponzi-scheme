@@ -27,7 +27,7 @@ export const OFFER_CARDS: OfferCard[] = [
   },
   {
     id: 'C02',
-    title: 'Community Real-Estate Notes (Affinity Pitch)',
+    title: 'Community Real-Estate Notes',
     pitch: "Trusted community member: 'Everyone here is earning 3% monthly. Keep it in the group.'",
     promisedReturn: { type: 'monthly', value: 0.03, guaranteed: true },
     returnHistoryMonthlyPct: [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0],
@@ -50,7 +50,7 @@ export const OFFER_CARDS: OfferCard[] = [
   },
   {
     id: 'C03',
-    title: 'Invoice Factoring Fund (Looks Boring on Purpose)',
+    title: 'Invoice Factoring Fund',
     pitch: 'We buy invoices at a discount; returns vary. Here are contracts and audited statements.',
     promisedReturn: { type: 'annual', value: 0.10, guaranteed: false },
     returnHistoryMonthlyPct: [0.6, 1.2, -0.3, 1.0, 0.4, 0.9, 0.1, 1.1, -0.2, 0.8, 0.5, 0.7],
@@ -116,7 +116,7 @@ export const OFFER_CARDS: OfferCard[] = [
   },
   {
     id: 'C06',
-    title: 'Carbon Credit Pre-Sale (Ambiguous)',
+    title: 'Carbon Credit Pre-Sale',
     pitch: 'Buy carbon credits early; sell later to corporates. Returns estimated, not guaranteed.',
     promisedReturn: { type: 'annual', value: 0.20, guaranteed: false },
     returnHistoryMonthlyPct: [2.0, -1.0, 3.5, -2.5, 1.0, 0.0, 2.5, -1.5, 4.0, -3.0, 1.5, 0.5],
@@ -138,7 +138,7 @@ export const OFFER_CARDS: OfferCard[] = [
   },
   {
     id: 'C07',
-    title: 'Private Credit Fund (Boring, Transparent)',
+    title: 'Private Credit Fund',
     pitch: "Senior secured lending to SMEs. Returns are variable. Here's the risk disclosure.",
     promisedReturn: { type: 'annual', value: 0.12, guaranteed: false },
     returnHistoryMonthlyPct: [0.9, 1.1, 0.7, 0.6, 1.3, -0.4, 0.8, 0.9, 0.5, 1.0, 0.2, 0.7],
@@ -183,7 +183,7 @@ export const OFFER_CARDS: OfferCard[] = [
   },
   {
     id: 'C09',
-    title: 'Art Fractional Shares (Pump-y, Not a Ponzi)',
+    title: 'Art Fractional Shares',
     pitch: 'Buy shares of art pieces. Potential upside, but no guaranteed yield.',
     promisedReturn: { type: 'annual', value: 0.25, guaranteed: false },
     returnHistoryMonthlyPct: [5.0, -4.0, 6.5, -8.0, 7.0, -6.0, 4.0, -5.5, 9.0, -10.0, 3.0, -2.0],
@@ -274,7 +274,7 @@ export const OFFER_CARDS: OfferCard[] = [
   },
   {
     id: 'C13',
-    title: 'Covered Call ETF (Transparent, Boring)',
+    title: 'Covered Call ETF',
     pitch: 'Exchange-traded covered call strategy. Returns can vary. Prospectus and holdings published.',
     promisedReturn: { type: 'annual', value: 0.09, guaranteed: false },
     returnHistoryMonthlyPct: [1.1, 0.4, -0.8, 1.6, 0.2, 0.9, -0.3, 1.2, 0.7, -0.5, 1.0, 0.3],
@@ -296,7 +296,7 @@ export const OFFER_CARDS: OfferCard[] = [
   },
   {
     id: 'C14',
-    title: 'High-Yield Savings Promo (Regulated, But Has Fine Print)',
+    title: 'High-Yield Savings Promo',
     pitch: 'Earn 5% on savings—insured up to limits. Rate applies only up to a cap; variable after promo period.',
     promisedReturn: { type: 'annual', value: 0.05, guaranteed: false },
     returnHistoryMonthlyPct: [0.4, 0.4, 0.4, 0.4, 0.2, 0.2, 0.2, 0.2, 0.15, 0.15, 0.15, 0.15],
@@ -342,7 +342,7 @@ export const OFFER_CARDS: OfferCard[] = [
   },
   {
     id: 'C16',
-    title: 'Solar Panel Lease Notes (Illiquid, Could Be Real)',
+    title: 'Solar Panel Lease Notes',
     pitch: 'Finance solar panel leases. Estimated 14% annual, not guaranteed. 12-month lock-up.',
     promisedReturn: { type: 'annual', value: 0.14, guaranteed: false },
     returnHistoryMonthlyPct: [2.0, -1.5, 1.0, 0.8, 1.5, -0.9, 1.1, 0.4, 1.8, -1.2, 0.9, 0.6],
@@ -364,7 +364,7 @@ export const OFFER_CARDS: OfferCard[] = [
   },
   {
     id: 'C17',
-    title: 'Local Infrastructure Bond (Low Drama)',
+    title: 'Local Infrastructure Bond',
     pitch: 'Municipal-style infrastructure note. Returns modest. Full offering document and risk disclosure.',
     promisedReturn: { type: 'annual', value: 0.06, guaranteed: false },
     returnHistoryMonthlyPct: [0.45, 0.48, 0.46, 0.50, 0.44, 0.47, 0.43, 0.49, 0.45, 0.46, 0.44, 0.48],
