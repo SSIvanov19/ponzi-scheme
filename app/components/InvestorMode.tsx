@@ -25,6 +25,7 @@ export function InvestorMode() {
     currentCard,
     performAction,
     makeDecision,
+    sellPosition,
     nextRound,
     hideTeaching,
     dismissSummary,
@@ -195,6 +196,7 @@ export function InvestorMode() {
               playerCash={state.playerCash}
               currentInvestment={currentInvestment}
               onDecision={makeDecision}
+              onSellPosition={sellPosition}
               disabled={hasDecided}
               canReport={!state.reportedCards.has(currentCard.id)}
               portfolio={state.portfolio}

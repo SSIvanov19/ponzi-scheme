@@ -84,6 +84,7 @@ const initialState: GameState = {
 type GameAction =
   | { type: 'PERFORM_ACTION'; action: InvestorAction }
   | { type: 'MAKE_DECISION'; decision: InvestorDecision; amount?: number; sellCardId?: string }
+  | { type: 'SELL_POSITION'; cardId: string }
   | { type: 'PERFORM_TEST'; test: RegulatorTest }
   | { type: 'MAKE_LABEL'; label: RegulatorLabel }
   | { type: 'NEXT_ROUND' }
@@ -161,6 +162,51 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         actionPoints: state.actionPoints - cost,
         actionsThisRound: [...state.actionsThisRound, action.action],
+      };
+    }
+
+    case 'SELL_POSITION': {
+      // Sell a position from portfolio WITHOUT advancing the round
+      const sellCardId = action.cardId;
+      if (!sellCardId) return state;
+      
+      let newCash = state.playerCash;
+      const newPortfolio = [...state.portfolio];
+      const newPonziHealth = { ...state.ponziHealth };
+      
+      const positionIndex = newPortfolio.findIndex(p => p.cardId === sellCardId);
+      if (positionIndex === -1) return state;
+      
+      const position = newPortfolio[positionIndex];
+      const posCard = OFFER_CARDS.find(c => c.id === sellCardId);
+      const health = newPonziHealth[sellCardId] || 100;
+      
+      if (posCard && isPonziLike(posCard.hiddenTruth) && health <= 0) {
+        // Ponzi collapsed, can't sell - just return current state
+        return state;
+      } else if (posCard && isPonziLike(posCard.hiddenTruth) && health < 30) {
+        // Struggling Ponzi - partial sale only
+        const sellable = position.currentValue * 0.3;
+        newCash += sellable;
+        newPortfolio.splice(positionIndex, 1);
+      } else {
+        // Successful sale
+        newCash += position.currentValue;
+        newPortfolio.splice(positionIndex, 1);
+      }
+      
+      // Calculate total portfolio value
+      const totalPortfolioValue = newPortfolio.reduce((sum, p) => sum + p.currentValue, 0);
+      
+      return {
+        ...state,
+        playerCash: newCash,
+        portfolio: newPortfolio,
+        scores: {
+          ...state.scores,
+          netWorth: newCash + totalPortfolioValue,
+        },
+        // DO NOT set roundSummary or showTeachingPopup - stay on current round
       };
     }
 
@@ -568,6 +614,7 @@ interface GameContextType {
   dispatch: React.Dispatch<GameAction>;
   performAction: (action: InvestorAction) => void;
   makeDecision: (decision: InvestorDecision, amount?: number, sellCardId?: string) => void;
+  sellPosition: (cardId: string) => void;
   performTest: (test: RegulatorTest) => void;
   makeLabel: (label: RegulatorLabel) => void;
   nextRound: () => void;
@@ -610,6 +657,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch,
     performAction: (action) => dispatch({ type: 'PERFORM_ACTION', action }),
     makeDecision: (decision, amount, sellCardId) => dispatch({ type: 'MAKE_DECISION', decision, amount, sellCardId }),
+    sellPosition: (cardId) => dispatch({ type: 'SELL_POSITION', cardId }),
     performTest: (test) => dispatch({ type: 'PERFORM_TEST', test }),
     makeLabel: (label) => dispatch({ type: 'MAKE_LABEL', label }),
     nextRound: () => dispatch({ type: 'NEXT_ROUND' }),

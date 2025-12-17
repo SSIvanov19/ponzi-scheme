@@ -17,6 +17,7 @@ interface DecisionPanelProps {
   playerCash: number;
   currentInvestment: number;
   onDecision: (decision: InvestorDecision, amount?: number, sellCardId?: string) => void;
+  onSellPosition?: (cardId: string) => void;
   disabled?: boolean;
   canReport?: boolean;
   portfolio?: PortfolioPosition[];
@@ -25,7 +26,8 @@ interface DecisionPanelProps {
 export function DecisionPanel({ 
   playerCash, 
   currentInvestment, 
-  onDecision, 
+  onDecision,
+  onSellPosition,
   disabled,
   canReport = true,
   portfolio = [],
@@ -39,7 +41,9 @@ export function DecisionPanel({
   };
 
   const handleSellPosition = (cardId: string) => {
-    onDecision('sellPosition', 0, cardId);
+    if (onSellPosition) {
+      onSellPosition(cardId);
+    }
   };
 
   return (
@@ -140,31 +144,31 @@ export function DecisionPanel({
       {/* Main Actions */}
       <div className="space-y-3">
         <div className="text-xs text-slate-500 uppercase tracking-wide">Investment Actions</div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           {/* Invest / Invest More */}
           {currentInvestment === 0 ? (
             <button
               onClick={() => handleInvest('invest')}
               disabled={disabled || investAmount <= 0 || investAmount > playerCash}
-              className="p-3 rounded-lg transition-all bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full p-3 rounded-lg transition-all bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <TrendingUp className="w-5 h-5 text-white" />
                 <span className="font-medium text-white">Invest</span>
               </div>
-              <p className="text-xs text-white/70 mt-1">Put money into this offer</p>
+              <p className="text-xs text-white/70 mt-1 text-center">Put money into this offer</p>
             </button>
           ) : (
             <button
               onClick={() => handleInvest('investMore')}
               disabled={disabled || investAmount <= 0 || investAmount > playerCash}
-              className="p-3 rounded-lg transition-all bg-green-700 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full p-3 rounded-lg transition-all bg-green-700 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <TrendingUp className="w-5 h-5 text-white" />
                 <span className="font-medium text-white">Invest More</span>
               </div>
-              <p className="text-xs text-white/70 mt-1">Add more money to this fund</p>
+              <p className="text-xs text-white/70 mt-1 text-center">Add more money to this fund</p>
             </button>
           )}
 
@@ -172,7 +176,7 @@ export function DecisionPanel({
           <button
             onClick={() => onDecision('walkAway')}
             disabled={disabled}
-            className="col-span-2 p-3 rounded-lg transition-all bg-slate-600 hover:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full p-3 rounded-lg transition-all bg-slate-600 hover:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="flex items-center justify-center gap-2">
               <X className="w-5 h-5 text-white" />

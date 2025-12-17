@@ -16,8 +16,24 @@ import {
   Hand,
   ShieldAlert,
   Lightbulb,
-  Flag
+  Flag,
+  ShieldCheck
 } from 'lucide-react';
+import { isDefinitelyPonzi, isAmbiguous, isLegit } from '../lib/cards';
+
+// Map hiddenTruth values to user-friendly labels
+const HIDDEN_TRUTH_LABELS: Record<string, string> = {
+  ponzi: 'Ponzi Scheme',
+  pyramid_like_or_ponzi: 'Pyramid/Ponzi Scheme',
+  ponzi_or_unregistered_fraud: 'Ponzi or Unregistered Fraud',
+  ponzi_or_fraud: 'Ponzi or Fraud',
+  ponzi_like_liquidity_trap: 'Ponzi-Like Liquidity Trap',
+  can_mimic_ponzi_dynamics: 'Can Mimic Ponzi Dynamics',
+  ambiguous_can_create_ponzi_like_dynamics: 'High Risk - Ponzi-Like Dynamics',
+  unclear_high_risk_not_necessarily_ponzi: 'High Risk (Not Necessarily Ponzi)',
+  speculative_not_ponzi: 'Speculative (Not a Ponzi)',
+  legit: 'Legitimate Investment',
+};
 
 export function ResultsScreen() {
   const { state, resetGame } = useGame();
@@ -33,13 +49,24 @@ export function ResultsScreen() {
   };
 
   const getTruthBadge = (truth: string) => {
+    // Definite scams - red
+    if (isDefinitelyPonzi(truth)) {
+      return <span className="px-1.5 sm:px-2 py-1 rounded text-xs bg-red-500 text-white">SCAM</span>;
+    }
+    // Ponzi-like dynamics (pyramid, liquidity traps, etc.) - orange
     if (isPonziLike(truth)) {
-      return <span className="px-2 py-1 rounded text-xs bg-red-500 text-white">SCAM</span>;
+      return <span className="px-1.5 sm:px-2 py-1 rounded text-xs bg-orange-500 text-white">HIGH RISK</span>;
     }
-    if (truth === 'legit') {
-      return <span className="px-2 py-1 rounded text-xs bg-green-500 text-white">LEGIT</span>;
+    // Legitimate investments - green
+    if (isLegit(truth)) {
+      return <span className="px-1.5 sm:px-2 py-1 rounded text-xs bg-green-500 text-white">LEGIT</span>;
     }
-    return <span className="px-2 py-1 rounded text-xs bg-yellow-500 text-white">RISKY</span>;
+    // Speculative/unclear - yellow
+    return <span className="px-1.5 sm:px-2 py-1 rounded text-xs bg-yellow-500 text-white">RISKY</span>;
+  };
+
+  const getTruthLabel = (truth: string) => {
+    return HIDDEN_TRUTH_LABELS[truth] || truth;
   };
 
   const getInvestorScore = (cardId: string, truth: string) => {
@@ -47,20 +74,28 @@ export function ResultsScreen() {
     if (!result) return null;
 
     const isScam = isPonziLike(truth);
+    const isLegitimate = isLegit(truth);
+    const isRisky = isAmbiguous(truth); // High risk but not necessarily a scam
     const invested = result.decision === 'invest' || result.decision === 'investMore';
     const avoided = result.decision === 'walkAway';
     const reported = result.decision === 'report';
 
     if (isScam) {
-      if (reported) return { icon: <Trophy className="w-5 h-5 text-yellow-400" />, text: 'Perfect!', color: 'text-green-400' };
-      if (avoided) return { icon: <CheckCircle className="w-5 h-5 text-green-400" />, text: 'Good call', color: 'text-green-400' };
-      if (invested) return { icon: <XCircle className="w-5 h-5 text-red-400" />, text: 'Trapped!', color: 'text-red-400' };
-    } else {
-      if (invested) return { icon: <CheckCircle className="w-5 h-5 text-green-400" />, text: 'Good investment', color: 'text-green-400' };
-      if (avoided) return { icon: <AlertCircle className="w-5 h-5 text-yellow-400" />, text: 'Missed opportunity', color: 'text-yellow-400' };
-      if (reported) return { icon: <XCircle className="w-5 h-5 text-red-400" />, text: 'False alarm', color: 'text-red-400' };
+      if (reported) return { icon: <Trophy className="w-4 sm:w-5 h-4 sm:h-5 text-yellow-400" />, text: 'Perfect!', color: 'text-green-400' };
+      if (avoided) return { icon: <CheckCircle className="w-4 sm:w-5 h-4 sm:h-5 text-green-400" />, text: 'Good call', color: 'text-green-400' };
+      if (invested) return { icon: <XCircle className="w-4 sm:w-5 h-4 sm:h-5 text-red-400" />, text: 'Trapped!', color: 'text-red-400' };
+    } else if (isLegitimate) {
+      // Only legitimate investments should show "missed opportunity"
+      if (invested) return { icon: <CheckCircle className="w-4 sm:w-5 h-4 sm:h-5 text-green-400" />, text: 'Good investment', color: 'text-green-400' };
+      if (avoided) return { icon: <AlertCircle className="w-4 sm:w-5 h-4 sm:h-5 text-yellow-400" />, text: 'Missed opportunity', color: 'text-yellow-400' };
+      if (reported) return { icon: <XCircle className="w-4 sm:w-5 h-4 sm:h-5 text-red-400" />, text: 'False alarm', color: 'text-red-400' };
+    } else if (isRisky) {
+      // High risk investments - avoiding is good, investing is risky
+      if (avoided) return { icon: <ShieldCheck className="w-4 sm:w-5 h-4 sm:h-5 text-green-400" />, text: 'Avoided risk', color: 'text-green-400' };
+      if (invested) return { icon: <AlertCircle className="w-4 sm:w-5 h-4 sm:h-5 text-yellow-400" />, text: 'Risky bet', color: 'text-yellow-400' };
+      if (reported) return { icon: <MinusCircle className="w-4 sm:w-5 h-4 sm:h-5 text-slate-400" />, text: 'Overly cautious', color: 'text-slate-400' };
     }
-    return { icon: <MinusCircle className="w-5 h-5 text-slate-400" />, text: 'Neutral', color: 'text-slate-400' };
+    return { icon: <MinusCircle className="w-4 sm:w-5 h-4 sm:h-5 text-slate-400" />, text: 'Neutral', color: 'text-slate-400' };
   };
 
   // Calculate summary stats
@@ -93,43 +128,43 @@ export function ResultsScreen() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 text-center">
-            <div className="text-3xl font-bold text-green-400 flex items-center justify-center gap-2">
-              <DollarSign className="w-6 h-6" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="bg-slate-800 rounded-xl p-3 sm:p-4 border border-slate-700 text-center">
+            <div className="text-xl sm:text-3xl font-bold text-green-400 flex items-center justify-center gap-1 sm:gap-2">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6" />
               {state.scores.netWorth.toLocaleString()}
             </div>
-            <div className="text-sm text-slate-400">Final Net Worth</div>
+            <div className="text-xs sm:text-sm text-slate-400">Final Net Worth</div>
           </div>
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 text-center">
-            <div className="text-3xl font-bold text-blue-400 flex items-center justify-center gap-2">
-              <Zap className="w-6 h-6" />
+          <div className="bg-slate-800 rounded-xl p-3 sm:p-4 border border-slate-700 text-center">
+            <div className="text-xl sm:text-3xl font-bold text-blue-400 flex items-center justify-center gap-1 sm:gap-2">
+              <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
               {state.actionPoints}
             </div>
-            <div className="text-sm text-slate-400">Remaining AP</div>
+            <div className="text-xs sm:text-sm text-slate-400">Remaining AP</div>
           </div>
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 text-center">
-            <div className="text-3xl font-bold text-yellow-400 flex items-center justify-center gap-2">
-              <Target className="w-6 h-6" />
+          <div className="bg-slate-800 rounded-xl p-3 sm:p-4 border border-slate-700 text-center">
+            <div className="text-xl sm:text-3xl font-bold text-yellow-400 flex items-center justify-center gap-1 sm:gap-2">
+              <Target className="w-5 h-5 sm:w-6 sm:h-6" />
               {investorCorrect}/{totalRounds}
             </div>
-            <div className="text-sm text-slate-400">Accuracy</div>
+            <div className="text-xs sm:text-sm text-slate-400">Accuracy</div>
           </div>
         </div>
 
         {/* Comparison Table */}
         <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-          <div className="p-4 border-b border-slate-700">
-            <h2 className="text-xl font-bold text-white">Your Decisions</h2>
+          <div className="p-3 sm:p-4 border-b border-slate-700">
+            <h2 className="text-lg sm:text-xl font-bold text-white">Your Decisions</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">Offer</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-slate-400">Truth</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-slate-400">Your Decision</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-slate-400">Score</th>
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-slate-400">Offer</th>
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-medium text-slate-400">Truth</th>
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-medium text-slate-400 hidden sm:table-cell">Decision</th>
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-medium text-slate-400">Score</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
@@ -141,14 +176,17 @@ export function ResultsScreen() {
 
                   return (
                     <tr key={card.id} className="hover:bg-slate-700/50">
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-white font-medium">{card.title}</div>
-                        <div className="text-xs text-slate-500">{card.id}</div>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3">
+                        <div className="text-xs sm:text-sm text-white font-medium line-clamp-2">{card.title}</div>
+                        <div className="text-xs text-slate-500 hidden sm:block">{card.id}</div>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        {getTruthBadge(card.hiddenTruth)}
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          {getTruthBadge(card.hiddenTruth)}
+                          <span className="text-xs text-slate-500 hidden sm:block">{getTruthLabel(card.hiddenTruth)}</span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 text-center hidden sm:table-cell">
                         {investorResult ? (
                           <span title={investorResult.decision}>
                             {getDecisionIcon(investorResult.decision)}
@@ -157,10 +195,11 @@ export function ResultsScreen() {
                           <span className="text-slate-500">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 text-center">
                         {investorScore ? (
-                          <span className={`text-sm flex items-center justify-center gap-1 ${investorScore.color}`}>
-                            {investorScore.icon} {investorScore.text}
+                          <span className={`text-xs sm:text-sm flex items-center justify-center gap-1 ${investorScore.color}`}>
+                            {investorScore.icon}
+                            <span className="hidden sm:inline">{investorScore.text}</span>
                           </span>
                         ) : (
                           <span className="text-slate-500">—</span>
@@ -175,18 +214,18 @@ export function ResultsScreen() {
         </div>
 
         {/* Key Learnings */}
-        <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <Lightbulb className="w-6 h-6 text-yellow-400" />
+        <div className="bg-slate-800 rounded-xl p-4 sm:p-6 border border-slate-700">
+          <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
             Key Learnings
           </h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-slate-900 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-red-400 mb-2 flex items-center gap-2">
-                <Flag className="w-5 h-5" />
+          <div className="grid md:grid-cols-2 gap-3 sm:gap-4">
+            <div className="bg-slate-900 rounded-lg p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-semibold text-red-400 mb-2 flex items-center gap-2">
+                <Flag className="w-4 h-4 sm:w-5 sm:h-5" />
                 Red Flags to Watch
               </h3>
-              <ul className="text-sm text-slate-300 space-y-1">
+              <ul className="text-xs sm:text-sm text-slate-300 space-y-1">
                 <li>• Guaranteed returns (real investments have risk)</li>
                 <li>• Overly consistent returns (markets fluctuate)</li>
                 <li>• Missing documentation or audits</li>
@@ -195,12 +234,12 @@ export function ResultsScreen() {
                 <li>• Unlicensed sellers</li>
               </ul>
             </div>
-            <div className="bg-slate-900 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-green-400 mb-2 flex items-center gap-2">
-                <CheckCircle className="w-5 h-5" />
+            <div className="bg-slate-900 rounded-lg p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-semibold text-green-400 mb-2 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                 Signs of Legitimacy
               </h3>
-              <ul className="text-sm text-slate-300 space-y-1">
+              <ul className="text-xs sm:text-sm text-slate-300 space-y-1">
                 <li>• Registered with regulators</li>
                 <li>• Licensed, verified sellers</li>
                 <li>• Audited financial statements</li>
